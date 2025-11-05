@@ -365,6 +365,13 @@ function M.setup(opts)
   local diff = require("claudecode.diff")
   diff.setup(M.state.config)
 
+  -- Set up autoread option for file refresh
+  vim.o.autoread = true
+
+  -- Set up file refresh functionality
+  local file_refresh = require("claudecode.file_refresh")
+  file_refresh.setup(M, M.state.config)
+
   if M.state.config.auto_start then
     M.start(false) -- Suppress notification on auto-start
   end
@@ -380,6 +387,9 @@ function M.setup(opts)
         -- Clear queue even if server isn't running
         clear_mention_queue()
       end
+      -- Clean up file refresh functionality
+      local file_refresh = require("claudecode.file_refresh")
+      file_refresh.cleanup()
     end,
     desc = "Automatically stop Claude Code integration when exiting Neovim",
   })
@@ -478,6 +488,9 @@ function M.start(show_startup_notification)
     logger.info("init", "Claude Code integration started on port " .. tostring(M.state.port))
   end
 
+  -- Trigger User event for server started
+  vim.api.nvim_exec_autocmds("User", { pattern = "ClaudeCodeServerStarted" })
+
   return true, M.state.port
 end
 
@@ -518,6 +531,9 @@ function M.stop()
   clear_mention_queue()
 
   logger.info("init", "Claude Code integration stopped")
+
+  -- Trigger User event for server stopped
+  vim.api.nvim_exec_autocmds("User", { pattern = "ClaudeCodeServerStopped" })
 
   return true
 end

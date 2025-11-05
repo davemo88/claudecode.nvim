@@ -33,6 +33,12 @@ M.defaults = {
     { name = "Opusplan: Claude Opus 4.1 (Latest) + Sonnet 4.5 (Latest)", value = "opusplan" },
     { name = "Claude Haiku 4.5 (Latest)", value = "haiku" },
   },
+  refresh = {
+    enable = true, -- Enable automatic file refresh when Claude modifies files
+    updatetime = 100, -- updatetime value when Claude Code is active (milliseconds)
+    timer_interval = 1000, -- How often to check for file changes (milliseconds)
+    show_notifications = true, -- Show notifications when files are reloaded
+  },
   terminal = nil, -- Will be lazy-loaded to avoid circular dependency
 }
 
@@ -172,6 +178,19 @@ function M.validate(config)
     assert(type(model.name) == "string" and model.name ~= "", "models[" .. i .. "].name must be a non-empty string")
     assert(type(model.value) == "string" and model.value ~= "", "models[" .. i .. "].value must be a non-empty string")
   end
+
+  -- Validate refresh options
+  assert(type(config.refresh) == "table", "refresh must be a table")
+  assert(type(config.refresh.enable) == "boolean", "refresh.enable must be a boolean")
+  assert(
+    type(config.refresh.updatetime) == "number" and config.refresh.updatetime > 0,
+    "refresh.updatetime must be a positive number"
+  )
+  assert(
+    type(config.refresh.timer_interval) == "number" and config.refresh.timer_interval > 0,
+    "refresh.timer_interval must be a positive number"
+  )
+  assert(type(config.refresh.show_notifications) == "boolean", "refresh.show_notifications must be a boolean")
 
   return true
 end
